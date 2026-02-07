@@ -1,268 +1,224 @@
-# VerdictAI
-Autonomous, Continual-Learning Misinformation Triage System (Chain-of-Debate)
+# VerdictAI (DebateShield)
+Real-time Chain-of-Debate claim triage with explainable evidence and workflow actions.
 
-Built for the Continual Learning Hackathon — "Build agents that don’t just think, they act."
-
-DebateShield is an autonomous, self-improving AI system that analyzes real-time claims, retrieves evidence, runs a structured multi-agent debate, produces a final verdict, takes automated actions, and continuously learns from past decisions.
-
-It is designed for real-world trust & safety, content moderation, and emergency misinformation detection.
-
----
-
-## Problem and Impact
-
-### The Problem
-Misinformation spreads faster than traditional fact-checking systems can handle. Human moderation faces challenges in:
-- Scale
-- Speed
-- Consistency
-- Explainability
-- Bias
-
-### Our Solution
-DebateShield acts as an AI-powered moderation copilot that:
-- Reasons through a structured multi-agent debate
-- Grounds responses in real-time web evidence via You.com
-- Takes automated actions via Intercom and Plivo
-- Learns from past decisions using a continual memory system
+VerdictAI is an agentic system that:
+1) takes a claim (often from social media),
+2) retrieves evidence,
+3) runs a structured multi-agent debate (Verifier vs Skeptic, moderated),
+4) produces a verdict + confidence,
+5) generates share-ready posts,
+6) optionally triggers workflow actions (Intercom, Composio/Twitter, etc.),
+7) stores the outcome for re-check + repeated-claim handling.
 
 ---
 
-## Alignment with Hackathon Judging Criteria
+## What the UI Components Do (and how they affect results)
 
-### 1. Autonomy — Real-Time Action Without Human Intervention
-DebateShield operates fully autonomously:
-1. Accepts a claim
-2. Retrieves live evidence using You.com
-3. Runs a Chain-of-Debate (Verifier → Skeptic → Moderator)
-4. Produces a final verdict with confidence score
-5. Triggers automated actions when necessary
+### 1) **Analyze Claim (textbox)**
+**Purpose:** The claim is the “unit of work” for the agents.  
+**Effect on results:** The claim text drives:
+- evidence queries (“support” search and “debunk” search),
+- how the Verifier/Skeptic argue,
+- final verdict + confidence,
+- what gets stored in memory/history.
 
-No manual intervention is required once a claim is submitted.
-
----
-
-### 2. Idea — Meaningful Real-World Value
-DebateShield is applicable to:
-- Social media moderation
-- Customer support safety teams
-- Newsrooms and fact-checking organizations
-- Emergency response teams
-- Trust and safety platforms
-
-Example use case demonstrated in the hackathon:
-If a claim states “City water is contaminated,” DebateShield:
-- Analyzes it within seconds
-- If false and high risk, sends an Intercom alert and Plivo SMS
-- If the same claim appears again, returns an instant verdict via memory (continual learning)
+**Example:**
+- Claim: “City water is contaminated—do not drink today.”
+- Evidence retrieval searches:
+  - Support query: `City water is contaminated…`
+  - Refute query: `debunk City water is contaminated…`
 
 ---
 
-### 3. Technical Implementation
-Core technical components:
-- Backend: FastAPI (asynchronous, production-ready)
-- LLM: OpenAI GPT-4 (or compatible model)
-- Evidence Retrieval: You.com API
-- Action Layer: Intercom and Plivo
-- Memory: SQLite database with fuzzy matching (85% similarity threshold)
-- Frontend: Single-page web interface (`index.html`)
-- Modular architecture (`main.py`, `cod_agents.py`, `memory.py`, `you_search.py`, `integrations.py`)
+### 2) **Source (dropdown)**
+**Purpose:** Source helps the system interpret *how trustworthy / how fast it spreads / what kind of evidence is expected*.  
+**Effect on results (recommended behavior):**
+- **User / Social media**: treat as low-trust, high-spread → require stronger evidence before labeling “true”; bias toward “UNCERTAIN/MIXED” if evidence is thin.
+- **News / Blog**: slightly higher default trust, but still verify.
+- **Official / Government**: higher prior trust, but still cross-check.
+- **Internal / Corporate** (if you add this later): prioritize internal knowledge base or incident tooling.
+
+**Why it matters:** Same claim + different source should change “risk posture.”  
+Example:
+- “New law bans international students from working immediately.”
+  - Source=Social → more conservative stance unless strong citations.
+  - Source=Official statement → fewer citations needed, still verify.
 
 ---
 
-### 4. Tool Use — Sponsor Integrations
+### 3) **Urgency Hint (dropdown)**
+**Purpose:** Urgency tells the system how time-sensitive the claim is (harm potential + need for fast escalation).  
+**Effect on results (recommended behavior):**
+- **High urgency**:
+  - lower tolerance for missing evidence → “MIXED/UNCERTAIN but high risk”
+  - triggers stronger “Act” policies (alerts, re-check scheduling)
+  - encourages shorter, safer share-ready text (“We’re investigating…”)
+- **Medium urgency**:
+  - normal evidence requirements
+  - actions only if risk crosses threshold
+- **Low urgency**:
+  - can spend more time, less likely to trigger actions
 
-| Tool | Usage in the Project |
-|------|---------------------|
-| You.com | Live evidence retrieval for supporting and opposing perspectives |
-| Intercom | Automated moderation alerts for medium and high-risk claims |
-| Plivo | Emergency SMS escalation for high-risk false claims |
-
----
-
-### 5. Presentation (3-Minute Demo)
-
-Suggested demo flow:
-1. Paste a high-risk claim and click “Analyze”
-2. Show verdict, evidence, and debate transcript
-3. Demonstrate Intercom alert and SMS trigger
-4. Re-submit the same claim to show instant “Memory Hit”
+**In short:** Urgency doesn’t “change truth,” it changes **how aggressively you act** and **how cautious the messaging is**.
 
 ---
 
-## Core Innovation: Chain-of-Debate (CoD)
+### 4) **Pipeline Step Buttons**
+Usually shown as: **(1) Retrieve → (2) Debate → (3) Decide → (4) Act**
 
-```
-Input Claim
-     ↓
-Memory Check (fuzzy match 85%+)
-     ↓
-You.com Evidence Retrieval
-     ↓
-Verifier Agent  → Argues FOR the claim
-Skeptic Agent   → Argues AGAINST the claim
-     ↓
-Moderator Agent → Produces Final Verdict
-     ↓
-Action Engine:
-- Intercom alert (medium/high risk)
-- Plivo SMS (high risk + false + 70%+ confidence)
-     ↓
-Store in Memory (continual learning)
-```
+These represent the agentic workflow:
 
----
+#### (1) Retrieve
+Pull evidence (support + refute).  
+**If evidence is empty** → verdict becomes conservative (often UNCERTAIN).
 
-## Technology Stack
+#### (2) Debate (multi-agent)
+Two agents argue:
+- **Verifier:** strongest evidence FOR the claim
+- **Skeptic:** strongest evidence AGAINST the claim
 
-### Sponsor Tools
-- You.com — Evidence retrieval
-- Intercom — Moderation workflow
-- Plivo — SMS escalation
+#### (3) Decide (moderator)
+Moderator produces:
+- verdict label
+- risk label
+- category label
+- confidence score
+- key reasons
 
-### Core Technologies
-- Python 3.9+
-- FastAPI + Uvicorn
-- OpenAI GPT-4
-- SQLite with fuzzy matching
-- HTML, CSS, and JavaScript frontend
+#### (4) Act
+Optional actions:
+- Intercom alert
+- Composio/Twitter post (if enabled)
+- store in memory / queue live re-check
 
 ---
 
-## Quick Start (Local Setup)
+### 5) **Live Mode (Live re-check + interval)**
+**Purpose:** “Watchdog mode” that re-runs analysis every N seconds.
 
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+**Two useful modes:**
+1. **Re-check same claim** (what you already have)
+   - Great demo: show “last checked” changes + evidence updates.
+2. **Watch a stream** (upgrade idea)
+   - Monitor a list of recent tweets / keywords / a curated feed and auto-analyze new items.
 
-### 2. Configure Environment
-Create a `.env` file:
-```bash
-LLM_API_KEY=your-openai-key
-YOU_API_KEY=your-you-api-key
-```
-
-Optional (for full demo):
-```bash
-INTERCOM_TOKEN=your-intercom-token
-INTERCOM_TARGET_ID=your-admin-id
-
-PLIVO_AUTH_ID=your-plivo-id
-PLIVO_AUTH_TOKEN=your-plivo-token
-PLIVO_FROM_NUMBER=+1XXXXXXXXXX
-PLIVO_TO_NUMBER=+1XXXXXXXXXX
-```
-
-### 3. Run the Application
-```bash
-python run.py
-```
-or
-```bash
-uvicorn main:app --reload
-```
-
-Then open:
-```
-http://localhost:8000
-```
+**What it changes:** Live Mode should:
+- update the evidence cards
+- update “last checked”
+- optionally write new entries into Recent Analyses
+- trigger actions if risk threshold rises
 
 ---
 
-## API Endpoints
-
-### POST `/analyze`
-```json
-{
-  "claim": "Breaking: city water is contaminated",
-  "context": {"source": "social"}
-}
-```
-
-### GET `/health`
-Returns system status and memory statistics.
-
-### GET `/stats`
-Returns number of claims analyzed and verdict distribution.
+### 6) **Recent Analyses (history panel)**
+**Purpose:** Product feel + audit trail.  
+**Effect:** Lets you show:
+- repeated-claim behavior (“we saw this before”)
+- timeline (“last checked”)
+- quick comparisons of verdict drift
 
 ---
 
-## Project Structure
+### 7) **Verdict Card**
+Typically includes:
+- **Verdict** (TRUE / FALSE / MIXED / UNCERTAIN)
+- **Risk** (LOW / MEDIUM / HIGH)
+- **Category** (HEALTH / POLITICS / FINANCE / GENERAL)
+- **Confidence** (0–100)
 
-```
-DebateShield_hack/
-├── main.py          # FastAPI application
-├── run.py           # Entry point
-├── cod_agents.py    # Verifier, Skeptic, Moderator agents
-├── you_search.py    # You.com integration
-├── integrations.py  # Intercom + Plivo actions
-├── memory.py        # SQLite + fuzzy matching memory
-├── index.html       # Frontend UI
-├── requirements.txt
-├── QUICKSTART.md
-├── DEPLOYMENT.md
-└── debateshield.db  # Local memory database
-```
+**How it’s computed:** The Moderator should use:
+- strength & agreement of evidence,
+- debate arguments,
+- source priors (source dropdown),
+- urgency hint (action posture).
 
 ---
 
-## Sample Claims to Test
+### 8) **Evidence Cards (For / Against)**
+**Purpose:** Explainability with citations.  
+**Effect on results:** Evidence quality is the #1 driver of confidence.
 
-High-risk claim (triggers SMS):
-```
-Breaking: city water is contaminated — do not drink today.
-```
-
-Health misinformation:
-```
-This pill cures diabetes in 7 days.
-```
-
-Financial rumor:
-```
-Company X declared bankruptcy today.
-```
+**Best practice:**
+- “Evidence For” should list *supporting sources only*.
+- “Evidence Against” should list *refuting sources only*.
+- If both sides share the same link → you should dedupe or label it “Ambiguous / Mixed source”.
 
 ---
 
-## Continual Learning (Core Differentiator)
-
-DebateShield does not only analyze claims — it learns from them.
-
-Memory system features:
-- Fuzzy matching at 85% similarity
-- Instant cached responses for repeated claims
-- Stores verdict, confidence, risk level, evidence, and timestamp
-- Maintains consistency across evaluations
-
-Planned future improvements:
-- Drift detection when new evidence contradicts past verdicts
-- Human moderator feedback loop
-- Migration from SQLite to PostgreSQL for scalability
+### 9) **Why We Think This (Key reasons + Debate transcript)**
+**Purpose:** Explainable AI output.  
+**Effect:** Makes your system defensible and “audit-friendly”:
+- Key reasons = executive summary
+- Debate transcript = trace of reasoning and tradeoffs
 
 ---
 
-## Why This Project Stands Out
+### 10) **Share-ready Post**
+**Purpose:** Turn verdict + evidence into a short post.  
+**What it should include:**
+- the verdict (careful tone if UNCERTAIN),
+- 1–2 citations (URLs),
+- a “what to do next” line,
+- no overclaiming beyond evidence.
 
-- Solves a real-world misinformation problem
-- Fully autonomous decision-making
-- Meaningful use of three sponsor tools
-- Demonstrates continual learning in action
-- Production-ready FastAPI backend
-- Explainable multi-agent reasoning via Chain-of-Debate
-
----
-
-## Team
-
-Built for the Continual Learning Hackathon by a three-person team:
-- Backend, agents, and memory system
-- Integrations and action policy
-- UI, demo, and final presentation
+**Example output style:**
+- Neutral: “We checked X. Evidence is mixed/uncertain. Here are sources…”
+- Firm: “Claim is misleading because… sources: …”
 
 ---
 
-## License
+### 11) **Autopilot Actions**
+**Purpose:** Demonstrate “agents that act.”  
+**Effect:** Actions should depend on:
+- risk,
+- urgency,
+- confidence,
+- category.
 
-MIT License — free to use, modify, and extend.
+**Simple policy (easy + demo-friendly):**
+- HIGH risk AND confidence ≥ 70 → trigger action
+- MEDIUM risk AND confidence ≥ 80 → trigger action
+- otherwise → no action, but store for re-check
+
+---
+
+## How to Make It “Real” in a Hack-Focused Way
+
+### A) Real evidence (already working)
+Use You.com API to populate evidence cards.
+
+**Success criteria:**
+- Evidence For/Against shows real articles + snippets
+- Confidence increases when citations are strong
+
+### B) Real-time watchdog (best demo upgrade)
+1) User enables Live Mode
+2) System re-checks claim every N seconds
+3) If evidence changes OR confidence changes beyond threshold:
+   - update UI
+   - log a new “recent analysis”
+   - (optional) trigger action
+
+### C) Real “share” using Composio + Twitter
+Instead of only “copy to clipboard”, add:
+- “Post Draft to X (Twitter)” (safe mode: create draft / preview)
+- “Post Now” (only if user confirms)
+
+**Why Composio helps:** You avoid building OAuth + token storage yourselves; Composio manages connected account + auth config.
+
+---
+
+## Environment Variables (.env)
+
+Minimum:
+```env
+APP_ENV=dev
+DATABASE_PATH=./debateshield.db
+
+LLM_API_KEY=sk-...
+LLM_MODEL=gpt-4o-mini
+
+YOU_API_KEY=ydc-sk-...
+
+INTERCOM_TOKEN=...
+INTERCOM_TARGET_ID=...
