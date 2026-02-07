@@ -1,4 +1,4 @@
-# VerdictAI (DebateShield)
+# VerdictAI
 Real-time Chain-of-Debate claim triage with explainable evidence and workflow actions.
 
 VerdictAI is an agentic system that:
