@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VerdictAI</title>
+  <style>
+    :root{
+      --bg1:#6a77ff;
+      --bg2:#7a52c7;
+      --card:#ffffff;
+      --ink:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --good:#16a34a;
+      --bad:#dc2626;
+      --warn:#f59e0b;
+      --info:#2563eb;
+      --pill:#eef2ff;
+      --shadow: 0 14px 40px rgba(17,24,39,.12);
+      --radius: 16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--ink);
+      background: radial-gradient(1200px 800px at 20% 10%, #7e8cff 0%, rgba(126,140,255,0) 60%),
+                  radial-gradient(1200px 800px at 80% 70%, #a56cff 0%, rgba(165,108,255,0) 60%),
+                  linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      padding:34px 16px 60px;
+    }
+    .wrap{max-width:1100px;margin:0 auto}
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+      margin-bottom:16px;
+    }
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;
+    }
+    .logo{
+      width:42px;height:42px;border-radius:12px;
+      background:linear-gradient(135deg,#111827,#4f46e5);
+      display:grid;place-items:center;color:white;font-weight:800;
+      box-shadow:0 10px 24px rgba(17,24,39,.18);
+    }
+    h1{font-size:26px;margin:0}
+    .subtitle{color:var(--muted);margin-top:4px;font-size:14px}
+    .pills{display:flex;gap:10px;flex-wrap:wrap}
+    .pill{
+      background:rgba(255,255,255,.2);
+      border:1px solid rgba(255,255,255,.3);
+      color:white;
+      padding:8px 12px;border-radius:999px;font-size:13px;
+      display:flex;gap:8px;align-items:center;
+      backdrop-filter: blur(10px);
+    }
+    .pill b{font-weight:700}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:950px){.grid{grid-template-columns:1.2fr .8fr}}
+    .section-title{display:flex;align-items:center;gap:10px;font-weight:800;margin:0 0 12px}
+    .muted{color:var(--muted)}
+    textarea{
+      width:100%;
+      min-height:90px;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      outline:none;
+      font-size:14px;
+      resize:vertical;
+    }
+    select, input[type="number"]{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      outline:none;
+      font-size:14px;
+      background:white;
+    }
+    .row{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:700px){.row{grid-template-columns:1fr 1fr}}
+    .btn{
+      width:100%;
+      padding:12px 14px;
+      border-radius:12px;
+      border:none;
+      cursor:pointer;
+      font-weight:800;
+      font-size:14px;
+      color:white;
+      background: linear-gradient(90deg, #4f46e5, #7c3aed);
+      box-shadow: 0 12px 28px rgba(79,70,229,.25);
+    }
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .btn.secondary{
+      color:var(--ink);
+      background:#f3f4f6;
+      box-shadow:none;
+      border:1px solid var(--line);
+    }
+    .samples{display:grid;gap:8px;margin-top:10px}
+    .sample{
+      padding:10px 12px;border:1px solid var(--line);border-radius:12px;
+      cursor:pointer;background:#f9fafb;
+      display:flex;gap:10px;align-items:flex-start;
+    }
+    .sample:hover{background:#f3f4f6}
+    .badge{
+      padding:8px 12px;border-radius:999px;font-weight:900;font-size:12px;
+      display:inline-flex;gap:8px;align-items:center;
+      border:1px solid var(--line);
+      background:#f9fafb;
+    }
+    .badge.good{background:#ecfdf5;border-color:#bbf7d0;color:#065f46}
+    .badge.bad{background:#fef2f2;border-color:#fecaca;color:#7f1d1d}
+    .badge.warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+    .badge.info{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
+    .meter{
+      height:10px;border-radius:999px;background:#e5e7eb;overflow:hidden;
+    }
+    .meter > div{height:100%;width:0%;background:#4f46e5}
+    .cols{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:850px){.cols{grid-template-columns:1fr 1fr}}
+    .box{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+    }
+    .list{display:grid;gap:10px}
+    .ev{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 10px;
+      background:#fafafa;
+    }
+    .ev a{color:#1d4ed8;text-decoration:none}
+    .ev a:hover{text-decoration:underline}
+    .small{font-size:12px;color:var(--muted)}
+    .steps{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .step{
+      padding:8px 10px;border-radius:999px;border:1px solid var(--line);
+      background:#f9fafb;font-size:12px;font-weight:800;color:#374151;
+    }
+    .step.on{background:#eef2ff;border-color:#c7d2fe;color:#3730a3}
+    .toggle{
+      display:flex;gap:10px;align-items:center;justify-content:space-between;
+      padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fafafa;
+    }
+    .toggle label{font-weight:800}
+    .toggle small{color:var(--muted)}
+    .hr{height:1px;background:var(--line);margin:14px 0}
+    .mono{font-family:var(--mono);font-size:12px}
+    .actions{display:grid;gap:10px}
+    .action-item{
+      border:1px solid var(--line);border-radius:14px;padding:12px;background:#fafafa;
+      display:flex;justify-content:space-between;gap:10px;align-items:center;
+    }
+    .dot{width:10px;height:10px;border-radius:999px;background:#d1d5db}
+    .dot.on{background:#22c55e}
+    .kpi{display:flex;gap:10px;flex-wrap:wrap}
+    .kpi .badge{background:#fff}
+    .history{display:grid;gap:8px}
+    .hist{
+      padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fafafa;
+      cursor:pointer;
+    }
+    .hist:hover{background:#f3f4f6}
+    .two-btn{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .toast{
+      position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
+      background:#111827;color:#fff;padding:10px 12px;border-radius:12px;
+      box-shadow:0 20px 50px rgba(0,0,0,.25);
+      display:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="card top" style="background:rgba(255,255,255,.92);">
+      <div class="brand">
+        <div class="logo">VA</div>
+        <div>
+          <h1>VerdictAI</h1>
+          <div class="subtitle">Real-time Chain-of-Debate claim triage with explainable evidence and workflow actions.</div>
+        </div>
+      </div>
+      <div class="pills">
+        <div class="pill"><b>You.com</b> Evidence</div>
+        <div class="pill"><b>Intercom</b> Workflow</div>
+        <div class="pill"><b>Chain-of-Debate</b> Multi-agent</div>
+        <div class="pill"><b>Live Mode</b> Re-check</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="section-title">Analyze Claim</div>
+
+          <div class="muted" style="margin-bottom:8px;">Paste a claim, then we fetch evidence, run a verifier vs skeptic debate, and publish an explainable verdict.</div>
+
+          <textarea id="claim" placeholder="Paste a claim here... (e.g., 'This supplement cures diabetes in 7 days.')"></textarea>
+
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <div class="small" style="margin:0 0 6px;">Source (optional)</div>
+              <select id="source">
+                <option value="social">User / Social media</option>
+                <option value="news">News / Blog</option>
+                <option value="intercom">Intercom ticket</option>
+                <option value="internal">Internal note</option>
+              </select>
+            </div>
+            <div>
+              <div class="small" style="margin:0 0 6px;">Urgency hint</div>
+              <select id="urgency">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <button id="analyzeBtn" class="btn">Analyze</button>
+          </div>
+
+          <div class="steps" id="steps" style="display:none;">
+            <div class="step" id="s1">1) Retrieve</div>
+            <div class="step" id="s2">2) Debate</div>
+            <div class="step" id="s3">3) Decide</div>
+            <div class="step" id="s4">4) Act</div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="section-title">Try sample claims</div>
+          <div class="samples" id="samples">
+            <div class="sample" data-claim="Breaking: city water is contaminated—do not drink today."><div>Breaking: city water is contaminated—do not drink today.</div></div>
+            <div class="sample" data-claim="This supplement cures diabetes in 7 days."><div>This supplement cures diabetes in 7 days.</div></div>
+            <div class="sample" data-claim="Company X declared bankruptcy today."><div>Company X declared bankruptcy today.</div></div>
+            <div class="sample" data-claim="New law bans international students from working immediately."><div>New law bans international students from working immediately.</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Verdict</div>
+
+          <div class="kpi">
+            <span id="verdictBadge" class="badge info">—</span>
+            <span id="riskBadge" class="badge">—</span>
+            <span id="topicBadge" class="badge">—</span>
+            <span id="freshBadge" class="badge">Last checked: —</span>
+            <span id="memoryBadge" class="badge" style="display:none;">Memory hit</span>
+          </div>
+
+          <div style="margin-top:10px;">
+            <div class="small" style="display:flex;justify-content:space-between;">
+              <span>Confidence</span><span id="confText" class="mono">—</span>
+            </div>
+            <div class="meter"><div id="confBar"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Evidence</div>
+          <div class="cols">
+            <div class="box">
+              <div class="section-title" style="margin:0 0 8px;">Evidence For</div>
+              <div id="evFor" class="list small">Run an analysis to see sources.</div>
+            </div>
+            <div class="box">
+              <div class="section-title" style="margin:0 0 8px;">Evidence Against</div>
+              <div id="evAgainst" class="list small">Run an analysis to see sources.</div>
+            </div>
+          </div>
+          <div class="small" style="margin-top:10px;">
+            Tip: If evidence is empty, your You.com key may be blocked (403). The product will show a conservative verdict until evidence is available.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Why We Think This</div>
+          <div class="box">
+            <div class="section-title" style="margin:0 0 8px;">Key reasons</div>
+            <div id="why" class="small">—</div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="box">
+            <div class="section-title" style="margin:0 0 8px;">Debate transcript (short)</div>
+            <div id="transcript" class="small">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Share-ready post</div>
+          <div class="muted" style="margin-bottom:10px;">Generate a tweet/reply from the model’s reply templates (copy/paste ready).</div>
+
+          <div class="two-btn">
+            <button class="btn secondary" id="genNeutral">Generate (Neutral)</button>
+            <button class="btn secondary" id="genFirm">Generate (Firm)</button>
+          </div>
+
+          <div class="hr"></div>
+          <div class="box">
+            <div class="small" style="display:flex;justify-content:space-between;align-items:center;">
+              <span>Output</span>
+              <button class="btn secondary" style="width:auto;padding:8px 10px" id="copyPost">Copy</button>
+            </div>
+            <div id="postOut" class="mono" style="margin-top:10px;white-space:pre-wrap;">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Autopilot Actions</div>
+          <div class="actions">
+            <div class="action-item">
+              <div style="display:flex;gap:10px;align-items:center;">
+                <div id="dotIntercom" class="dot"></div>
+                <div>
+                  <div style="font-weight:900;">Intercom Alert</div>
+                  <div id="intercomText" class="small">—</div>
+                </div>
+              </div>
+              <span id="intercomStatus" class="badge">—</span>
+            </div>
+
+            <div class="action-item">
+              <div style="display:flex;gap:10px;align-items:center;">
+                <div id="dotEsc" class="dot"></div>
+                <div>
+                  <div style="font-weight:900;">Escalation</div>
+                  <div id="escText" class="small">Not configured (optional)</div>
+                </div>
+              </div>
+              <span id="escStatus" class="badge">Optional</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="section-title">Live Mode</div>
+          <div class="toggle">
+            <div>
+              <label><input id="liveOn" type="checkbox" /> Live re-check</label>
+              <div><small>Auto-runs analysis every N seconds.</small></div>
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <div class="row">
+            <div>
+              <div class="small" style="margin:0 0 6px;">Interval (sec)</div>
+              <input id="liveSec" type="number" min="10" value="20" />
+            </div>
+            <div>
+              <div class="small" style="margin:0 0 6px;">Mode</div>
+              <select id="liveMode">
+                <option value="same">Re-check same claim</option>
+                <option value="rotate">Rotate sample claims</option>
+              </select>
+            </div>
+          </div>
+          <div style="height:10px"></div>
+          <button id="stopLive" class="btn secondary">Stop Live Mode</button>
+        </div>
+
+        <div class="card">
+          <div class="section-title">Recent analyses</div>
+          <div id="history" class="history small">No history yet.</div>
+          <div class="hr"></div>
+          <button id="clearHistory" class="btn secondary">Clear history</button>
+        </div>
+
+        <div class="card">
+          <div class="section-title">System status</div>
+          <div class="small" id="sys">Checking…</div>
+          <div class="hr"></div>
+          <button id="refreshHealth" class="btn secondary">Refresh</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copied</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  const claimEl = $("claim");
+  const analyzeBtn = $("analyzeBtn");
+  const sourceEl = $("source");
+  const urgencyEl = $("urgency");
+
+  const stepsEl = $("steps");
+  const s1 = $("s1"), s2 = $("s2"), s3 = $("s3"), s4 = $("s4");
+
+  const verdictBadge = $("verdictBadge");
+  const riskBadge = $("riskBadge");
+  const topicBadge = $("topicBadge");
+  const freshBadge = $("freshBadge");
+  const memoryBadge = $("memoryBadge");
+  const confBar = $("confBar");
+  const confText = $("confText");
+
+  const evFor = $("evFor");
+  const evAgainst = $("evAgainst");
+  const why = $("why");
+  const transcript = $("transcript");
+
+  const dotIntercom = $("dotIntercom");
+  const intercomText = $("intercomText");
+  const intercomStatus = $("intercomStatus");
+
+  const dotEsc = $("dotEsc");
+  const escText = $("escText");
+  const escStatus = $("escStatus");
+
+  const postOut = $("postOut");
+  const genNeutral = $("genNeutral");
+  const genFirm = $("genFirm");
+  const copyPost = $("copyPost");
+
+  const liveOn = $("liveOn");
+  const liveSec = $("liveSec");
+  const liveMode = $("liveMode");
+  const stopLive = $("stopLive");
+
+  const historyEl = $("history");
+  const clearHistory = $("clearHistory");
+
+  const sys = $("sys");
+  const refreshHealth = $("refreshHealth");
+
+  const toast = $("toast");
+
+  let lastResponse = null;
+  let liveTimer = null;
+  let sampleIndex = 0;
+
+  const samples = Array.from(document.querySelectorAll(".sample"));
+  samples.forEach(s => {
+    s.addEventListener("click", () => {
+      claimEl.value = s.getAttribute("data-claim");
+      window.scrollTo({top: 0, behavior:"smooth"});
+    });
+  });
+
+  function showToast(msg="Copied"){
+    toast.textContent = msg;
+    toast.style.display = "block";
+    setTimeout(() => toast.style.display = "none", 1200);
+  }
+
+  function setStep(n){
+    stepsEl.style.display = "flex";
+    [s1,s2,s3,s4].forEach(x => x.classList.remove("on"));
+    if(n>=1) s1.classList.add("on");
+    if(n>=2) s2.classList.add("on");
+    if(n>=3) s3.classList.add("on");
+    if(n>=4) s4.classList.add("on");
+  }
+
+  function badgeForVerdict(v){
+    const vv = (v||"").toLowerCase();
+    verdictBadge.className = "badge";
+    if(vv==="true") { verdictBadge.classList.add("good"); verdictBadge.textContent = "TRUE"; }
+    else if(vv==="false") { verdictBadge.classList.add("bad"); verdictBadge.textContent = "FALSE"; }
+    else if(vv==="mixed") { verdictBadge.classList.add("warn"); verdictBadge.textContent = "MIXED"; }
+    else { verdictBadge.classList.add("info"); verdictBadge.textContent = "UNCERTAIN"; }
+  }
+  function badgeForRisk(r){
+    const rr=(r||"").toLowerCase();
+    riskBadge.className="badge";
+    if(rr==="high") { riskBadge.classList.add("bad"); riskBadge.textContent="HIGH RISK"; }
+    else if(rr==="medium") { riskBadge.classList.add("warn"); riskBadge.textContent="MEDIUM RISK"; }
+    else { riskBadge.classList.add("good"); riskBadge.textContent="LOW RISK"; }
+  }
+
+  function renderEvidence(list){
+    if(!list || !Array.isArray(list) || list.length===0){
+      return `<div class="small muted">No evidence found.</div>`;
+    }
+    return list.map(x => {
+      const title = x.title || "Source";
+      const url = x.url || "";
+      const snip = x.snippet || "";
+      const link = url ? `<a href="${url}" target="_blank" rel="noreferrer">${title}</a>` : `<b>${title}</b>`;
+      return `
+        <div class="ev">
+          <div>${link}</div>
+          <div class="small">${snip}</div>
+          ${url ? `<div class="small mono">${url}</div>` : ``}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderBullets(arr){
+    if(!arr || arr.length===0) return `<div class="small muted">No explanation generated.</div>`;
+    return `<ul style="margin:0;padding-left:18px;">${arr.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>`;
+  }
+
+  function renderTranscript(t){
+    if(!t || !Array.isArray(t) || t.length===0) return `<div class="small muted">No debate transcript generated.</div>`;
+    return t.map(turn => {
+      const a = (turn.agent || "agent").toUpperCase();
+      const m = turn.message || "";
+      return `<div style="margin-bottom:10px;"><b>${a}:</b> ${escapeHtml(m)}</div>`;
+    }).join("");
+  }
+
+  function escapeHtml(str){
+    return (str||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
+  function addHistory(item){
+    const key = "ds_history_v1";
+    const existing = JSON.parse(localStorage.getItem(key) || "[]");
+    existing.unshift(item);
+    localStorage.setItem(key, JSON.stringify(existing.slice(0,12)));
+    renderHistory();
+  }
+
+  function renderHistory(){
+    const key = "ds_history_v1";
+    const existing = JSON.parse(localStorage.getItem(key) || "[]");
+    if(!existing.length){
+      historyEl.innerHTML = "No history yet.";
+      return;
+    }
+    historyEl.innerHTML = existing.map((h,i)=>`
+      <div class="hist" data-i="${i}">
+        <div><b>${escapeHtml(h.verdict||"UNCERTAIN")}</b> · ${escapeHtml(h.risk||"")}</div>
+        <div class="small">${escapeHtml(h.claim||"")}</div>
+        <div class="small mono">${escapeHtml(h.time||"")}</div>
+      </div>
+    `).join("");
+    Array.from(historyEl.querySelectorAll(".hist")).forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const i = parseInt(el.getAttribute("data-i"),10);
+        const arr = JSON.parse(localStorage.getItem(key) || "[]");
+        if(arr[i]){
+          claimEl.value = arr[i].claim || "";
+          window.scrollTo({top:0, behavior:"smooth"});
+        }
+      });
+    });
+  }
+
+  clearHistory.addEventListener("click", ()=>{
+    localStorage.removeItem("ds_history_v1");
+    renderHistory();
+  });
+
+  function applyResponse(data){
+    lastResponse = data;
+
+    badgeForVerdict(data.verdict);
+    badgeForRisk(data.risk_level);
+
+    topicBadge.className="badge";
+    topicBadge.textContent = (data.topic || "general").toUpperCase();
+
+    const conf = Number(data.confidence || 0);
+    confText.textContent = `${conf}/100`;
+    confBar.style.width = `${Math.max(0, Math.min(100, conf))}%`;
+
+    const dt = new Date();
+    freshBadge.textContent = `Last checked: ${dt.toLocaleTimeString()}`;
+
+    const mh = !!(data.memory && data.memory.hit);
+    memoryBadge.style.display = mh ? "inline-flex" : "none";
+
+    evFor.innerHTML = renderEvidence(data.evidence_for);
+    evAgainst.innerHTML = renderEvidence(data.evidence_against);
+
+    why.innerHTML = renderBullets((data.explainability && data.explainability.why_bullets) || []);
+    transcript.innerHTML = renderTranscript((data.explainability && data.explainability.debate_transcript) || []);
+
+    const inter = data.actions && data.actions.intercom ? data.actions.intercom : {sent:false};
+    if(inter.sent){
+      dotIntercom.classList.add("on");
+      intercomStatus.className="badge good";
+      intercomStatus.textContent = "SENT";
+      intercomText.textContent = "Alert delivered to Intercom workflow.";
+    } else {
+      dotIntercom.classList.remove("on");
+      intercomStatus.className="badge";
+      intercomStatus.textContent = "NOT SENT";
+      intercomText.textContent = "Not triggered (or not configured).";
+    }
+
+    dotEsc.classList.remove("on");
+    escStatus.className="badge";
+    escStatus.textContent = "Optional";
+    escText.textContent = "Hook Composio/Slack/etc. later if needed.";
+
+    const tpl = data.reply_templates || {};
+    const basePost = tpl.neutral || tpl.friendly || "—";
+    postOut.textContent = basePost;
+
+    addHistory({
+      claim: data.claim,
+      verdict: (data.verdict||"uncertain").toUpperCase(),
+      risk: (data.risk_level||"").toUpperCase(),
+      time: new Date().toLocaleString()
+    });
+  }
+
+  async function analyze(){
+    const claim = (claimEl.value || "").trim();
+    if(!claim){
+      showToast("Paste a claim first");
+      return;
+    }
+
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = "Analyzing...";
+    setStep(1);
+
+    try{
+      const payload = {
+        claim,
+        context: { source: sourceEl.value, audience: "public", urgency_hint: urgencyEl.value }
+      };
+
+      setStep(1);
+      await new Promise(r=>setTimeout(r,250));
+
+      const res = await fetch("/analyze", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      setStep(2);
+      const data = await res.json();
+
+      setStep(3);
+      await new Promise(r=>setTimeout(r,150));
+
+      applyResponse(data);
+
+      setStep(4);
+
+    }catch(e){
+      console.error(e);
+      showToast("Error. Check server logs.");
+    }finally{
+      analyzeBtn.disabled = false;
+      analyzeBtn.textContent = "Analyze";
+    }
+  }
+
+  analyzeBtn.addEventListener("click", analyze);
+
+  genNeutral.addEventListener("click", ()=>{
+    const tpl = (lastResponse && lastResponse.reply_templates) || {};
+    postOut.textContent = tpl.neutral || tpl.friendly || "—";
+  });
+
+  genFirm.addEventListener("click", ()=>{
+    const tpl = (lastResponse && lastResponse.reply_templates) || {};
+    postOut.textContent = tpl.firm_mod || tpl.neutral || "—";
+  });
+
+  copyPost.addEventListener("click", async ()=>{
+    try{
+      await navigator.clipboard.writeText(postOut.textContent || "");
+      showToast();
+    }catch(e){
+      showToast("Copy failed");
+    }
+  });
+
+  async function loadHealth(){
+    try{
+      const r = await fetch("/health");
+      const h = await r.json();
+      sys.innerHTML = `
+        <div class="badge ${h.you_configured ? "good":"warn"}">You.com: ${h.you_configured ? "ON":"OFF/Blocked"}</div>
+        <div class="badge ${h.llm_configured ? "good":"warn"}">LLM: ${h.llm_configured ? "ON":"OFF"}</div>
+        <div class="badge ${h.intercom_configured ? "good":"warn"}">Intercom: ${h.intercom_configured ? "ON":"OFF"}</div>
+        <div class="small" style="margin-top:10px;">Env: <span class="mono">${h.env}</span> · DB: <span class="mono">${h.db_path}</span></div>
+      `;
+    }catch(e){
+      sys.textContent = "Health check failed.";
+    }
+  }
+
+  refreshHealth.addEventListener("click", loadHealth);
+
+  function stopLiveMode(){
+    if(liveTimer) clearInterval(liveTimer);
+    liveTimer = null;
+    liveOn.checked = false;
+    showToast("Live mode stopped");
+  }
+
+  stopLive.addEventListener("click", stopLiveMode);
+
+  liveOn.addEventListener("change", ()=>{
+    if(!liveOn.checked){
+      stopLiveMode();
+      return;
+    }
+    const sec = Math.max(10, Number(liveSec.value || 20));
+    if(liveTimer) clearInterval(liveTimer);
+    liveTimer = setInterval(()=>{
+      if(liveMode.value === "rotate"){
+        const s = samples[sampleIndex % samples.length];
+        claimEl.value = s.getAttribute("data-claim");
+        sampleIndex++;
+      }
+      analyze();
+    }, sec*1000);
+    showToast(`Live mode: every ${sec}s`);
+  });
+
+  renderHistory();
+  loadHealth();
+</script>
+</body>
+</html>
