@@ -1,4 +1,4 @@
-# DebateShield (VerdictAI)
+# VerdictAI
 Autonomous, Continual-Learning Misinformation Triage System (Chain-of-Debate)
 
 Built for the Continual Learning Hackathon — "Build agents that don’t just think, they act."
