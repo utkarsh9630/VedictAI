@@ -1,402 +1,268 @@
-# 🛡️ DebateShield Lite
+# DebateShield (VerdictAI)
+Autonomous, Continual-Learning Misinformation Triage System (Chain-of-Debate)
 
-**Real-time Chain-of-Debate Misinformation Triage with Explainable AI**
+Built for the Continual Learning Hackathon — "Build agents that don’t just think, they act."
 
-A multi-agent AI system that ingests claims in real-time, retrieves fresh evidence, debates validity through specialized agents, and produces explainable verdicts with automatic action triggers.
+DebateShield is an autonomous, self-improving AI system that analyzes real-time claims, retrieves evidence, runs a structured multi-agent debate, produces a final verdict, takes automated actions, and continuously learns from past decisions.
 
-## 🎯 Overview
+It is designed for real-world trust & safety, content moderation, and emergency misinformation detection.
 
-DebateShield Lite implements a Chain-of-Debate (CoD) architecture with three specialized agents:
-- **Verifier Agent**: Argues the claim could be true using retrieved evidence
-- **Skeptic Agent**: Argues the claim is false/misleading using retrieved evidence  
-- **Moderator Agent**: Adjudicates between arguments and produces final verdict
+---
 
-### Key Features
+## Problem and Impact
 
-✅ **Explainable AI by Design** - Every verdict includes evidence, rationale, and debate transcript  
-✅ **Real-time Evidence Retrieval** - Uses You.com API for fresh web grounding  
-✅ **Automated Actions** - Intercom alerts and Plivo SMS escalation based on risk  
-✅ **Operational Memory** - Stores past verdicts for faster, consistent responses  
-✅ **Risk-Based Triage** - Classifies and escalates based on topic and confidence  
+### The Problem
+Misinformation spreads faster than traditional fact-checking systems can handle. Human moderation faces challenges in:
+- Scale
+- Speed
+- Consistency
+- Explainability
+- Bias
 
-## 🛠️ Tech Stack
+### Our Solution
+DebateShield acts as an AI-powered moderation copilot that:
+- Reasons through a structured multi-agent debate
+- Grounds responses in real-time web evidence via You.com
+- Takes automated actions via Intercom and Plivo
+- Learns from past decisions using a continual memory system
 
-### Sponsor Tools (3+)
-- **You.com** - Evidence retrieval and web search
-- **Intercom** - Moderation workflow integration  
-- **Plivo** - SMS escalation for high-risk claims
+---
 
-### Core Stack
-- **Backend**: FastAPI, Uvicorn, Python 3.9+
-- **LLM**: OpenAI GPT-4 (or compatible API)
-- **Storage**: SQLite with fuzzy matching
-- **Frontend**: Single-page HTML/CSS/JS
+## Alignment with Hackathon Judging Criteria
 
-## 🚀 Quick Start
+### 1. Autonomy — Real-Time Action Without Human Intervention
+DebateShield operates fully autonomously:
+1. Accepts a claim
+2. Retrieves live evidence using You.com
+3. Runs a Chain-of-Debate (Verifier → Skeptic → Moderator)
+4. Produces a final verdict with confidence score
+5. Triggers automated actions when necessary
 
-### Prerequisites
+No manual intervention is required once a claim is submitted.
 
-1. **Python 3.9+** installed
-2. **API Keys** from:
-   - OpenAI (or compatible LLM provider)
-   - You.com API
-   - Intercom (optional)
-   - Plivo (optional)
+---
 
-### Installation
+### 2. Idea — Meaningful Real-World Value
+DebateShield is applicable to:
+- Social media moderation
+- Customer support safety teams
+- Newsrooms and fact-checking organizations
+- Emergency response teams
+- Trust and safety platforms
 
-1. **Clone/Download the project**
-```bash
-cd debateshield-lite
+Example use case demonstrated in the hackathon:
+If a claim states “City water is contaminated,” DebateShield:
+- Analyzes it within seconds
+- If false and high risk, sends an Intercom alert and Plivo SMS
+- If the same claim appears again, returns an instant verdict via memory (continual learning)
+
+---
+
+### 3. Technical Implementation
+Core technical components:
+- Backend: FastAPI (asynchronous, production-ready)
+- LLM: OpenAI GPT-4 (or compatible model)
+- Evidence Retrieval: You.com API
+- Action Layer: Intercom and Plivo
+- Memory: SQLite database with fuzzy matching (85% similarity threshold)
+- Frontend: Single-page web interface (`index.html`)
+- Modular architecture (`main.py`, `cod_agents.py`, `memory.py`, `you_search.py`, `integrations.py`)
+
+---
+
+### 4. Tool Use — Sponsor Integrations
+
+| Tool | Usage in the Project |
+|------|---------------------|
+| You.com | Live evidence retrieval for supporting and opposing perspectives |
+| Intercom | Automated moderation alerts for medium and high-risk claims |
+| Plivo | Emergency SMS escalation for high-risk false claims |
+
+---
+
+### 5. Presentation (3-Minute Demo)
+
+Suggested demo flow:
+1. Paste a high-risk claim and click “Analyze”
+2. Show verdict, evidence, and debate transcript
+3. Demonstrate Intercom alert and SMS trigger
+4. Re-submit the same claim to show instant “Memory Hit”
+
+---
+
+## Core Innovation: Chain-of-Debate (CoD)
+
+```
+Input Claim
+     ↓
+Memory Check (fuzzy match 85%+)
+     ↓
+You.com Evidence Retrieval
+     ↓
+Verifier Agent  → Argues FOR the claim
+Skeptic Agent   → Argues AGAINST the claim
+     ↓
+Moderator Agent → Produces Final Verdict
+     ↓
+Action Engine:
+- Intercom alert (medium/high risk)
+- Plivo SMS (high risk + false + 70%+ confidence)
+     ↓
+Store in Memory (continual learning)
 ```
 
-2. **Install dependencies**
+---
+
+## Technology Stack
+
+### Sponsor Tools
+- You.com — Evidence retrieval
+- Intercom — Moderation workflow
+- Plivo — SMS escalation
+
+### Core Technologies
+- Python 3.9+
+- FastAPI + Uvicorn
+- OpenAI GPT-4
+- SQLite with fuzzy matching
+- HTML, CSS, and JavaScript frontend
+
+---
+
+## Quick Start (Local Setup)
+
+### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Configure environment**
+### 2. Configure Environment
+Create a `.env` file:
 ```bash
-cp .env.example .env
-# Edit .env with your API keys
-```
-
-Required `.env` variables:
-```bash
-LLM_API_KEY=your-openai-api-key
+LLM_API_KEY=your-openai-key
 YOU_API_KEY=your-you-api-key
 ```
 
 Optional (for full demo):
 ```bash
-INTERCOM_TOKEN=your-token
-PLIVO_AUTH_ID=your-auth-id
-PLIVO_AUTH_TOKEN=your-token
+INTERCOM_TOKEN=your-intercom-token
+INTERCOM_TARGET_ID=your-admin-id
+
+PLIVO_AUTH_ID=your-plivo-id
+PLIVO_AUTH_TOKEN=your-plivo-token
 PLIVO_FROM_NUMBER=+1XXXXXXXXXX
 PLIVO_TO_NUMBER=+1XXXXXXXXXX
 ```
 
-4. **Run the application**
+### 3. Run the Application
 ```bash
 python run.py
 ```
-
-Or with uvicorn directly:
+or
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --reload
 ```
 
-5. **Open your browser**
+Then open:
 ```
 http://localhost:8000
 ```
 
-## 📋 API Documentation
+---
 
-### POST /analyze
+## API Endpoints
 
-Analyze a claim using Chain-of-Debate.
-
-**Request:**
+### POST `/analyze`
 ```json
 {
-  "claim": "Breaking: city water is contaminated—do not drink today.",
-  "context": {
-    "source": "social",
-    "audience": "public",
-    "urgency_hint": "high"
-  }
+  "claim": "Breaking: city water is contaminated",
+  "context": {"source": "social"}
 }
 ```
 
-**Response:**
-```json
-{
-  "claim": "...",
-  "verdict": "false",
-  "confidence": 84,
-  "risk_level": "high",
-  "topic": "emergency",
-  "evidence_for": [...],
-  "evidence_against": [...],
-  "explainability": {
-    "why_bullets": ["..."],
-    "uncertainties": ["..."],
-    "debate_transcript": [...]
-  },
-  "reply_templates": {...},
-  "actions": {
-    "intercom": {"sent": true, "id": "..."},
-    "plivo_sms": {"sent": true, "to": "+1...", "message": "..."}
-  },
-  "memory": {
-    "hit": false,
-    "matched_claim_id": null
-  }
-}
-```
+### GET `/health`
+Returns system status and memory statistics.
 
-### GET /health
-
-Health check and memory stats.
-
-### GET /stats
-
-Get memory statistics (total claims, verdict breakdown).
-
-## 🎭 Demo Script
-
-Perfect for hackathon demos (2-3 minutes):
-
-1. **Paste a high-risk false claim:**
-   ```
-   "Breaking: city water is contaminated—do not drink today."
-   ```
-
-2. **Show the verdict:**
-   - FALSE verdict with 80%+ confidence
-   - HIGH risk classification
-   - Evidence table with sources
-
-3. **Highlight explainability:**
-   - Scroll to "Why We Think This" section
-   - Show debate transcript between agents
-   - Point out uncertainty notes (if any)
-
-4. **Demo autopilot actions:**
-   - ✅ Intercom alert sent
-   - ✅ SMS escalation triggered (high risk + false + high confidence)
-
-5. **Test memory system:**
-   - Paste the **same claim** again
-   - Show "Memory Hit!" indicator
-   - Faster response time
-
-## 🎯 Use Cases
-
-### 1. Moderation Copilot
-Community moderators paste viral claims → get instant fact-check with evidence → receive moderation reply template
-
-### 2. Customer Support Safety
-Support agents check suspicious claims from users → reduce misinformation in responses → evidence-backed answers
-
-### 3. Emergency Escalation
-High-risk claims (water contamination, evacuation orders) → automatic SMS to safety team → rapid verification
-
-## 🧠 How Chain-of-Debate Works
-
-```
-┌─────────────┐
-│ Input Claim │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────────────┐
-│ Memory Check        │ ◄── Fuzzy match past claims
-│ (85%+ threshold)    │
-└──────┬──────────────┘
-       │
-       ▼
-┌─────────────────────┐
-│ Evidence Retrieval  │ ◄── You.com search
-│ • Support query     │     (claim + "debunk claim")
-│ • Refute query      │
-└──────┬──────────────┘
-       │
-       ▼
-┌─────────────────────┐
-│ VERIFIER Agent      │ ◄── Argues FOR the claim
-│ • Key points        │
-│ • Evidence for      │
-│ • Questions         │
-└──────┬──────────────┘
-       │
-       ▼
-┌─────────────────────┐
-│ SKEPTIC Agent       │ ◄── Argues AGAINST the claim
-│ • Key points        │
-│ • Evidence against  │
-│ • Risk flags        │
-└──────┬──────────────┘
-       │
-       ▼
-┌─────────────────────┐
-│ MODERATOR Agent     │ ◄── Final adjudication
-│ • Verdict           │
-│ • Confidence        │
-│ • Risk assessment   │
-│ • Explainability    │
-└──────┬──────────────┘
-       │
-       ▼
-┌─────────────────────┐
-│ Action Engine       │ ◄── Risk-based triggers
-│ • Intercom alert    │     (medium/high risk)
-│ • Plivo SMS         │     (high risk + false)
-└──────┬──────────────┘
-       │
-       ▼
-┌─────────────────────┐
-│ Store to Memory     │ ◄── For future reuse
-└─────────────────────┘
-```
-
-## 📊 Risk-to-Action Policy
-
-| Risk Level | Topics | Intercom Alert | Plivo SMS |
-|-----------|--------|---------------|-----------|
-| **HIGH** | Health, Emergency, Public Safety | ✅ Yes | ✅ If false + 70%+ confidence |
-| **MEDIUM/HIGH** | Finance, Scams, Security | ✅ Yes | ❌ No |
-| **MEDIUM** | Rumors, Politics | ✅ Yes | ❌ No |
-| **LOW** | Opinions, Harmless | ❌ No | ❌ No |
-
-## 🔧 Configuration
-
-### Environment Variables
-
-```bash
-# Required
-LLM_API_KEY=          # OpenAI or compatible
-LLM_MODEL=            # Default: gpt-4-turbo-preview
-YOU_API_KEY=          # You.com search API
-
-# Optional - Intercom
-INTERCOM_TOKEN=       # Bearer token
-INTERCOM_TARGET_ID=   # Admin/user ID
-
-# Optional - Plivo
-PLIVO_AUTH_ID=        # Auth ID
-PLIVO_AUTH_TOKEN=     # Auth token
-PLIVO_FROM_NUMBER=    # Your Plivo number
-PLIVO_TO_NUMBER=      # Destination number
-
-# App Settings
-APP_ENV=dev           # dev or production
-DATABASE_PATH=./debateshield.db
-```
-
-## 📁 Project Structure
-
-```
-debateshield-lite/
-├── main.py              # FastAPI application
-├── config.py            # Configuration management
-├── memory.py            # SQLite memory system
-├── you_search.py        # You.com integration
-├── cod_agents.py        # Chain-of-Debate agents
-├── integrations.py      # Intercom + Plivo
-├── index.html           # Frontend UI
-├── requirements.txt     # Python dependencies
-├── .env.example         # Environment template
-├── .env                 # Your secrets (gitignored)
-└── README.md            # This file
-```
-
-## 🚢 Deployment
-
-### Local Development
-```bash
-python run.py
-# OR
-uvicorn main:app --reload
-```
-
-### Render Deployment
-
-1. Create new Web Service on Render
-2. Connect your Git repository
-3. Configure:
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
-4. Add environment variables in Render dashboard
-5. Deploy!
-
-### Docker (Optional)
-
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-## 🧪 Sample Claims for Testing
-
-1. **High Risk Emergency:**
-   ```
-   Breaking: city water is contaminated—do not drink today.
-   ```
-
-2. **High Risk Health:**
-   ```
-   This supplement cures diabetes in 7 days.
-   ```
-
-3. **Medium Risk Finance:**
-   ```
-   Company X declared bankruptcy today.
-   ```
-
-4. **Medium Risk Policy:**
-   ```
-   New law bans international students from working immediately.
-   ```
-
-## 🎓 Continual Learning Features
-
-### Operational Memory
-- Fuzzy matching (85%+ threshold) finds similar claims
-- Returns cached verdict for 90%+ matches
-- Stores: verdict, confidence, risk, evidence, actions, timestamp
-- Enables consistent moderation decisions
-
-### Future Enhancements
-- Drift detection: flag when evidence contradicts memory
-- Domain-specific expert agents (health, finance)
-- Analytics dashboard for verdict trends
-- Feedback loop: moderator corrections → improve future verdicts
-
-## 🤝 Team & Credits
-
-**Built for Continual Learning Hackathon**
-
-Team of 3:
-- Engineer A: Backend + CoD agents + memory
-- Engineer B: Integrations + action policy
-- Engineer C: UI + demo + polish
-
-**Sponsor Tools:**
-- You.com for evidence retrieval
-- Intercom for workflow integration  
-- Plivo for SMS escalation
-
-## 📄 License
-
-MIT License - feel free to use and modify!
-
-## 🐛 Troubleshooting
-
-### "LLM_API_KEY not configured"
-→ Add your OpenAI key to `.env`
-
-### "YOU_API_KEY not configured"  
-→ System will use mock data for demo, but get a real key for production
-
-### Intercom/Plivo errors
-→ These are optional - system works without them (simulated mode)
-
-### Database locked
-→ Delete `debateshield.db` and restart
-
-## 📞 Support
-
-For questions or issues:
-1. Check the `/health` endpoint
-2. Review logs in terminal
-3. Ensure all required API keys are set
+### GET `/stats`
+Returns number of claims analyzed and verdict distribution.
 
 ---
 
-**Built with ❤️ for safer, more transparent information ecosystems**
+## Project Structure
+
+```
+DebateShield_hack/
+├── main.py          # FastAPI application
+├── run.py           # Entry point
+├── cod_agents.py    # Verifier, Skeptic, Moderator agents
+├── you_search.py    # You.com integration
+├── integrations.py  # Intercom + Plivo actions
+├── memory.py        # SQLite + fuzzy matching memory
+├── index.html       # Frontend UI
+├── requirements.txt
+├── QUICKSTART.md
+├── DEPLOYMENT.md
+└── debateshield.db  # Local memory database
+```
+
+---
+
+## Sample Claims to Test
+
+High-risk claim (triggers SMS):
+```
+Breaking: city water is contaminated — do not drink today.
+```
+
+Health misinformation:
+```
+This pill cures diabetes in 7 days.
+```
+
+Financial rumor:
+```
+Company X declared bankruptcy today.
+```
+
+---
+
+## Continual Learning (Core Differentiator)
+
+DebateShield does not only analyze claims — it learns from them.
+
+Memory system features:
+- Fuzzy matching at 85% similarity
+- Instant cached responses for repeated claims
+- Stores verdict, confidence, risk level, evidence, and timestamp
+- Maintains consistency across evaluations
+
+Planned future improvements:
+- Drift detection when new evidence contradicts past verdicts
+- Human moderator feedback loop
+- Migration from SQLite to PostgreSQL for scalability
+
+---
+
+## Why This Project Stands Out
+
+- Solves a real-world misinformation problem
+- Fully autonomous decision-making
+- Meaningful use of three sponsor tools
+- Demonstrates continual learning in action
+- Production-ready FastAPI backend
+- Explainable multi-agent reasoning via Chain-of-Debate
+
+---
+
+## Team
+
+Built for the Continual Learning Hackathon by a three-person team:
+- Backend, agents, and memory system
+- Integrations and action policy
+- UI, demo, and final presentation
+
+---
+
+## License
+
+MIT License — free to use, modify, and extend.
