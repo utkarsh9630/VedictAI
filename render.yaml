@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: debateshield
+    name: debateshield-lite
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
@@ -8,3 +8,7 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_PATH
+        value: /opt/render/project/src/debateshield.db
