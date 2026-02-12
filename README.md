@@ -1,8 +1,8 @@
-# DebateShield Lite
+# VerdictAI
 
 Real-time Chain-of-Debate claim verification with explainable evidence and transparent reasoning.
 
-DebateShield Lite is an AI-powered fact-checking system that:
+VerdictAI is an AI-powered fact-checking system that:
 1. Takes a claim (from social media, news, or any source)
 2. Retrieves real-time evidence from the web
 3. Runs a structured multi-agent debate (Verifier vs Skeptic, moderated)
